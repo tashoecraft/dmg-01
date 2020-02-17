@@ -80,9 +80,9 @@ impl CPU {
                         self.registers.set_hl(new_value);
                     }
                     ADDHLTarget::SP => {
-                        let value = self.registers.get_sp();
-                        let new_value = self.add_hl(value);
-                        self.registers.set_hl(new_value);
+                        // let value = self.registers.get_sp();
+                        // let new_value = self.add_hl(value);
+                        // self.registers.set_hl(new_value);
                     }
                     _ => { /* Error for unsupported addHL target */}
                 }
@@ -113,12 +113,19 @@ impl CPU {
         self.registers.f.half_carry = (self.registers.get_hl() & 0xFF) + (value & 0xFF) > 0xF;
         new_value
     }
+
+    fn sub(&mut self, value: u8) -> u8 {
+        let (new_value, did_overflow) = self.registers.a.overflowing_sub(value);
+        self.registers.f.zero = new_value == 0;
+        self.registers.f.subtract = true;
+        self.registers.f.carry = did_overflow;
+        new_value
+    }
 }
 
 #[cfg(test)]
-mod tests {
+mod cpu_execute_tests {
     use super::*;
-    use std::u8::MAX;
     #[test]
     fn cpu_execute_b2a() {
         let mut cpu = CPU::new();
@@ -136,9 +143,9 @@ mod tests {
     #[test]
     fn cpu_execute_bc_2_hl() {
         let mut cpu = CPU::new();
-        cpu.registers.set_bc = 250;
-        cpu.execute(Instruction::ADD_HL(ArthimeticTarget::BC));
-        assert_eq!(cpu.registers.get_hl, 250);
+        cpu.registers.set_bc(250);
+        cpu.execute(Instruction::ADDHL(ADDHLTarget::BC));
+        assert_eq!(cpu.registers.get_hl(), 250);
     }
     #[test]
     fn cpu_execute_de_2_hl() {
@@ -147,6 +154,12 @@ mod tests {
         cpu.execute(Instruction::ADD(ArthimeticTarget::A));
         assert_eq!(cpu.registers.a, 2);
     }
+}
+
+#[cfg(test)]
+mod cpu_add_tests {
+    use std::u8::MAX;
+    use super::*;
     #[test]
     fn cpu_add() {
         let mut cpu = CPU::new();
@@ -191,6 +204,12 @@ mod tests {
         assert_eq!(cpu.registers.f.half_carry, true);
         assert_eq!(cpu.registers.f.carry, false);
     }
+}
+
+#[cfg(test)]
+mod add_hl_tests {
+    use super::*;
+    use std::u8::MAX;
     #[test]
     fn cpu_add_hl() {
         let mut cpu = CPU::new();
@@ -242,4 +261,10 @@ mod tests {
         assert_eq!(cpu.registers.f.carry, true);
         assert_eq!(cpu.registers.f.half_carry, false);
     }
+}
+
+#[cfg(test)]
+mod sub_tests {
+    use super::*;
+
 }
