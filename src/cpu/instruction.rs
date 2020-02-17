@@ -1,5 +1,6 @@
 pub enum Instruction {
     ADD(ArthimeticTarget),
+    ADDHL(ADDHLTarget),
 }
 
 pub enum ArthimeticTarget {
