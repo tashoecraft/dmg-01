@@ -2,20 +2,18 @@ pub mod flags_register;
 pub mod instruction;
 pub mod registers;
 
-use self::instruction::{
-    Instruction, ArthimeticTarget, ADDHLTarget
-};
+use self::instruction::{ADDHLTarget, ArthimeticTarget, Instruction};
 use self::registers::Registers;
 
 use self::flags_register::FlagsRegister;
 
 pub struct CPU {
-    pub registers: Registers
+    pub registers: Registers,
 }
 impl CPU {
     pub fn new() -> CPU {
-        CPU {            
-            registers: Registers::new()
+        CPU {
+            registers: Registers::new(),
         }
     }
 
@@ -59,10 +57,10 @@ impl CPU {
                         let new_value = self.add(value, false);
                         self.registers.a = new_value;
                     }
-                    _ => { /* Error for unsupported add target */}
+                    _ => { /* Error for unsupported add target */ }
                 }
             }
-            Instruction::ADC(target) => { 
+            Instruction::ADC(target) => {
                 match target {
                     // ADD A,n START
                     ArthimeticTarget::A => {
@@ -100,7 +98,7 @@ impl CPU {
                         let new_value = self.add(value, true);
                         self.registers.a = new_value;
                     }
-                    _ => { /* Error for unsupported add target */}
+                    _ => { /* Error for unsupported add target */ }
                 }
             }
 
@@ -126,12 +124,12 @@ impl CPU {
                         // let new_value = self.add_hl(value);
                         // self.registers.set_hl(new_value);
                     }
-                    _ => { /* Error for unsupported addHL target */}
+                    _ => { /* Error for unsupported addHL target */ }
                 }
             }
 
-           Instruction::SUB(target) => {
-               match target {
+            Instruction::SUB(target) => {
+                match target {
                     ArthimeticTarget::A => {
                         let value = self.registers.a;
                         let new_value = self.sub(value, false);
@@ -163,43 +161,43 @@ impl CPU {
                         self.registers.a = new_value;
                     }
                     _ => { /* TODO: support more instructions */ }
-               }
-           }
-           Instruction::SBC(target) => {
-            match target {
-             ArthimeticTarget::A => {
-                let value = self.registers.a;
-                let new_value = self.sub(value, true);
-                self.registers.a = new_value
-             } 
-             ArthimeticTarget::B => {
-                let value = self.registers.c;
-                let new_value = self.sub(value, true);
-                self.registers.a = new_value;
-             }
-             ArthimeticTarget::C => { 
-                let value = self.registers.c;
-                let new_value = self.sub(value, true);
-                self.registers.a = new_value;
-             }
-             ArthimeticTarget::D => {  
-                let value = self.registers.d;
-                let new_value = self.sub(value, true);
-                self.registers.a = new_value;
-             }
-             ArthimeticTarget::H => {
-                let value = self.registers.h;
-                let new_value = self.sub(value, true);
-                self.registers.a = new_value;
-             }
-             ArthimeticTarget::L => {
-                let value = self.registers.l;
-                let new_value = self.sub(value, true);
-                self.registers.a = new_value;
-             }
-             _ => { /* TODO: support more instructions */ }
+                }
             }
-           }
+            Instruction::SBC(target) => {
+                match target {
+                    ArthimeticTarget::A => {
+                        let value = self.registers.a;
+                        let new_value = self.sub(value, true);
+                        self.registers.a = new_value
+                    }
+                    ArthimeticTarget::B => {
+                        let value = self.registers.c;
+                        let new_value = self.sub(value, true);
+                        self.registers.a = new_value;
+                    }
+                    ArthimeticTarget::C => {
+                        let value = self.registers.c;
+                        let new_value = self.sub(value, true);
+                        self.registers.a = new_value;
+                    }
+                    ArthimeticTarget::D => {
+                        let value = self.registers.d;
+                        let new_value = self.sub(value, true);
+                        self.registers.a = new_value;
+                    }
+                    ArthimeticTarget::H => {
+                        let value = self.registers.h;
+                        let new_value = self.sub(value, true);
+                        self.registers.a = new_value;
+                    }
+                    ArthimeticTarget::L => {
+                        let value = self.registers.l;
+                        let new_value = self.sub(value, true);
+                        self.registers.a = new_value;
+                    }
+                    _ => { /* TODO: support more instructions */ }
+                }
+            }
             _ => { /* TODO: support more instructions */ }
         }
     }
@@ -218,10 +216,11 @@ impl CPU {
         self.registers.f.subtract = false;
         self.registers.f.carry = did_overflow || did_overflow2;
         // Half Carry check if the lower nibble 00001111 will overflow
-        // so if a is 00001111, then it is anded 00001111 -> 00001111 
+        // so if a is 00001111, then it is anded 00001111 -> 00001111
         // added to value, which does the same thing
         // if greater than 0xF, then it ups half carry
-        self.registers.f.half_carry = ((self.registers.a & 0xF) + (value & 0xF)  + additional_carry) > 0xF;
+        self.registers.f.half_carry =
+            ((self.registers.a & 0xF) + (value & 0xF) + additional_carry) > 0xF;
         final_value
     }
 
@@ -288,8 +287,8 @@ mod cpu_execute_tests {
 
 #[cfg(test)]
 mod cpu_add_tests {
-    use std::u8::MAX;
     use super::*;
+    use std::u8::MAX;
     #[test]
     fn cpu_add() {
         let mut cpu = CPU::new();
@@ -347,7 +346,7 @@ mod cpu_add_tests {
     #[test]
     fn cpu_add_carry_zero() {
         let mut cpu = CPU::new();
-        cpu.registers.a = 0; 
+        cpu.registers.a = 0;
         cpu.registers.f.carry = true;
         let new_value = cpu.add(0, true);
         assert_eq!(new_value, 1);
@@ -366,7 +365,7 @@ mod cpu_add_tests {
     #[test]
     fn cpu_add_carry_half_carry_carry() {
         let mut cpu = CPU::new();
-        cpu.registers.a = MAX-1;
+        cpu.registers.a = MAX - 1;
         cpu.registers.f.carry = true;
         let new_value = cpu.add(1, true);
         assert_eq!(new_value, 0);
@@ -445,5 +444,101 @@ mod add_hl_ests {
 #[cfg(test)]
 mod sub_tests {
     use super::*;
+    use std::u8::MAX;
+    #[test]
+    fn cpu_sub() {
+        let mut cpu = CPU::new();
+        cpu.registers.a = 10;
+        let new_value = cpu.sub(1, false);
+        assert_eq!(new_value, 9);
+        assert_eq!(cpu.registers.f.zero, false);
+        assert_eq!(cpu.registers.f.carry, false);
+        assert_eq!(cpu.registers.f.half_carry, false);
+        assert_eq!(cpu.registers.f.subtract, true);
+    }
 
+    #[test]
+    fn cpu_sub_zero() {
+        let mut cpu = CPU::new();
+        cpu.registers.a = 1;
+        let new_value = cpu.sub(1, false);
+        assert_eq!(new_value, 0);
+        assert_eq!(cpu.registers.f.zero, true);
+    }
+    #[test]
+    fn cpu_sub_no_half_carry() {
+        let mut cpu = CPU::new();
+        cpu.registers.a = 240;
+        let new_value = cpu.sub(17, false);
+        assert_eq!(new_value, 1);
+        assert_eq!(cpu.registers.f.half_carry, false);
+        assert_eq!(cpu.registers.f.carry, true);
+    }
+    #[test]
+    fn cpu_sub_half_carry_carry() {
+        let mut cpu = CPU::new();
+        cpu.registers.a = MAX;
+        let new_value = cpu.add(1, false);
+        assert_eq!(new_value, 0);
+        assert_eq!(cpu.registers.f.half_carry, true);
+        assert_eq!(cpu.registers.f.carry, true);
+    }
+    #[test]
+    fn cpu_sub_half_carry_no_carry() {
+        let mut cpu = CPU::new();
+        cpu.registers.a = 15;
+        let new_value = cpu.add(1, false);
+        assert_eq!(new_value, 16);
+        assert_eq!(cpu.registers.f.half_carry, true);
+        assert_eq!(cpu.registers.f.carry, false);
+    }
+    #[test]
+    fn cpu_sub_carry() {
+        let mut cpu = CPU::new();
+        cpu.registers.a = 1;
+        cpu.registers.f.subtract = true;
+        cpu.registers.f.carry = true;
+        let new_value = cpu.add(5, true);
+        assert_eq!(new_value, 7);
+        assert_eq!(cpu.registers.f.subtract, false);
+    }
+    #[test]
+    fn cpu_sub_carry_zero() {
+        let mut cpu = CPU::new();
+        cpu.registers.a = 0;
+        cpu.registers.f.carry = true;
+        let new_value = cpu.add(0, true);
+        assert_eq!(new_value, 1);
+        assert_eq!(cpu.registers.f.zero, false);
+    }
+    #[test]
+    fn cpu_sub_carry_no_half_carry_additional() {
+        let mut cpu = CPU::new();
+        cpu.registers.a = 240;
+        cpu.registers.f.carry = true;
+        let new_value = cpu.add(17, true);
+        assert_eq!(new_value, 2);
+        assert_eq!(cpu.registers.f.half_carry, false);
+        assert_eq!(cpu.registers.f.carry, true);
+    }
+    #[test]
+    fn cpu_sub_carry_half_carry_carry() {
+        let mut cpu = CPU::new();
+        cpu.registers.a = MAX - 1;
+        cpu.registers.f.carry = true;
+        let new_value = cpu.add(1, true);
+        assert_eq!(new_value, 0);
+        assert_eq!(cpu.registers.f.half_carry, true);
+        assert_eq!(cpu.registers.f.carry, true);
+    }
+    #[test]
+    fn cpu_sub_carry_half_carry_no_carry() {
+        let mut cpu = CPU::new();
+        cpu.registers.a = 15;
+        cpu.registers.f.carry = true;
+        let new_value = cpu.add(1, true);
+        assert_eq!(new_value, 17);
+        assert_eq!(cpu.registers.f.half_carry, true);
+        assert_eq!(cpu.registers.f.carry, false);
+    }
 }
