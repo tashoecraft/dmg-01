@@ -134,36 +134,71 @@ impl CPU {
                match target {
                     ArthimeticTarget::A => {
                         let value = self.registers.a;
-                        let new_value = self.sub(value);
+                        let new_value = self.sub(value, false);
                         self.registers.a = new_value;
                     }
                     ArthimeticTarget::B => {
                         let value = self.registers.b;
-                        let new_value = self.sub(value);
+                        let new_value = self.sub(value, false);
                         self.registers.a = new_value;
                     }
                     ArthimeticTarget::C => {
                         let value = self.registers.c;
-                        let new_value = self.sub(value);
+                        let new_value = self.sub(value, false);
                         self.registers.a = new_value;
                     }
                     ArthimeticTarget::D => {
                         let value = self.registers.d;
-                        let new_value = self.sub(value);
+                        let new_value = self.sub(value, false);
                         self.registers.a = new_value;
                     }
                     ArthimeticTarget::H => {
                         let value = self.registers.h;
-                        let new_value = self.sub(value);
+                        let new_value = self.sub(value, false);
                         self.registers.a = new_value;
                     }
                     ArthimeticTarget::L => {
                         let value = self.registers.l;
-                        let new_value = self.sub(value);
+                        let new_value = self.sub(value, false);
                         self.registers.a = new_value;
                     }
                     _ => { /* TODO: support more instructions */ }
                }
+           }
+           Instruction::SBC(target) => {
+            match target {
+             ArthimeticTarget::A => {
+                let value = self.registers.a;
+                let new_value = self.sub(value, true);
+                self.registers.a = new_value
+             } 
+             ArthimeticTarget::B => {
+                let value = self.registers.c;
+                let new_value = self.sub(value, true);
+                self.registers.a = new_value;
+             }
+             ArthimeticTarget::C => { 
+                let value = self.registers.c;
+                let new_value = self.sub(value, true);
+                self.registers.a = new_value;
+             }
+             ArthimeticTarget::D => {  
+                let value = self.registers.d;
+                let new_value = self.sub(value, true);
+                self.registers.a = new_value;
+             }
+             ArthimeticTarget::H => {
+                let value = self.registers.h;
+                let new_value = self.sub(value, true);
+                self.registers.a = new_value;
+             }
+             ArthimeticTarget::L => {
+                let value = self.registers.l;
+                let new_value = self.sub(value, true);
+                self.registers.a = new_value;
+             }
+             _ => { /* TODO: support more instructions */ }
+            }
            }
             _ => { /* TODO: support more instructions */ }
         }
@@ -200,12 +235,21 @@ impl CPU {
         new_value
     }
 
-    fn sub(&mut self, value: u8) -> u8 {
-        let (new_value, did_overflow) = self.registers.a.overflowing_sub(value);
-        self.registers.f.zero = new_value == 0;
+    fn sub(&mut self, value: u8, sub_carry: bool) -> u8 {
+        let additional_carry = if sub_carry && self.registers.f.carry {
+            1
+        } else {
+            0
+        };
+
+        let (sub, did_overflow) = self.registers.a.overflowing_sub(value);
+        let (final_value, did_overflow2) = sub.overflowing_add(additional_carry);
+        self.registers.f.zero = final_value == 0;
         self.registers.f.subtract = true;
-        self.registers.f.carry = did_overflow;
-        new_value
+        self.registers.f.carry = did_overflow || did_overflow2;
+
+        self.registers.f.half_carry = (self.registers.a & 0xF) < (value & 0xF) + additional_carry;
+        final_value
     }
 }
 

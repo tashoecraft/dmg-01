@@ -3,6 +3,7 @@ pub enum Instruction {
     ADC(ArthimeticTarget),
     ADDHL(ADDHLTarget),
     SUB(ArthimeticTarget),
+    SBC(ArthimeticTarget)
 }
 
 pub enum ArthimeticTarget {
